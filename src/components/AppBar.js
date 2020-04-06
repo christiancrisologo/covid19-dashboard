@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import cx from "clsx";
 import {
     AppBar as AppBarBase,
-    withStyles,
     MenuList,
     MenuItem,
     Toolbar,
@@ -10,6 +9,7 @@ import {
     IconButton,
     Hidden,
     Drawer,
+    makeStyles,
 } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import AppIcon from "@material-ui/icons/Apps";
@@ -19,7 +19,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 
 const drawerWidth = 240;
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
     root: {},
     menuButton: {
         marginLeft: theme.spacing(-2),
@@ -48,16 +48,15 @@ const styles = (theme) => ({
     },
     menu: {
         "& > li, & > a": {
-            color: theme.palette.tint40,
+            color: theme.palette.primaryColors[500],
             padding: theme.spacing(1),
         },
         "& > li:hover, & > a:hover": {
-            color: theme.palette.common.white,
-            // background: theme.palette.secondaryColors[900],
+            color: theme.palette.secondary.main,
+            background: theme.palette.shade20,
         },
         "& > li.active, & > a.active": {
             color: theme.palette.primary.main,
-            // background: theme.palette.secondaryColors[900],
         },
     },
     menuLabel: {
@@ -68,7 +67,7 @@ const styles = (theme) => ({
         display: "flex",
         "& > li, & > a": {
             borderRadius: "4px",
-            color: theme.palette.tint40,
+            color: theme.palette.secondary.main,
             margin: `0 ${theme.spacing(1)}px`,
             padding: theme.spacing(1),
         },
@@ -91,7 +90,7 @@ const styles = (theme) => ({
         flexGrow: 1,
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "flex-start",
     },
     rightSection: {
         overflow: "hidden",
@@ -106,15 +105,17 @@ const styles = (theme) => ({
     },
     drawerPaper: {
         width: drawerWidth,
-        // backgroundColor: theme.palette.secondaryColors[900],
+        backgroundColor: theme.palette.primary.dark,
     },
     title: {
         color: theme.palette.common.white,
     },
-});
+    logo: {
+        paddingRight: theme.spacing(1),
+    },
+}));
 
-const AppBar = ({
-    classes,
+export default function ({
     rootStyles,
     menuStyles,
     leftComponent,
@@ -128,13 +129,11 @@ const AppBar = ({
     appIcon,
     accountIcon,
     activeLink,
-    secondaryNavMenus,
-    onSecondaryNavChange,
-    secondaryNavCurrentTab,
-    showSecondaryNav = true,
+    middleComponent,
     onPrimaryMenuChange,
     container,
-}) => {
+}) {
+    const classes = useStyles();
     const [selectedLink, setLink] = useState();
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -154,38 +153,41 @@ const AppBar = ({
         setMobileOpen(!mobileOpen);
     };
 
-    const menu =
-        menuComponent ||
-        (menuList && menuList.length && (
-            <MenuList
-                className={cx(menuStyles, classes.menu, {
-                    [classes.menuList]: !mobileOpen,
-                })}
-            >
-                {menuList.map(({ label, className, onClick, ...rest }, key) => (
-                    <MenuItem
-                        key={key}
-                        {...rest}
-                        onClick={() => {
-                            onClick && onClick(label, { ...rest });
-                            onMenuClick({ label, ...rest });
-                        }}
-                        className={cx(
-                            { active: [label || key].includes(selectedLink) },
-                            className
-                        )}
-                    >
-                        <Typography
-                            variant="button"
-                            color="inherit"
-                            className={classes.menuLabel}
+    const menu = React.useMemo(
+        () =>
+            menuComponent ||
+            (menuList && menuList.length && (
+                <MenuList
+                    className={cx(menuStyles, classes.menu, {
+                        [classes.menuList]: !mobileOpen,
+                    })}
+                >
+                    {menuList.map(({ label, onClick, ...rest }, key) => (
+                        <MenuItem
+                            key={key}
+                            {...rest}
+                            onClick={() => {
+                                onClick && onClick(label, { ...rest });
+                                onMenuClick({ label, ...rest });
+                            }}
+                            className={cx({
+                                active: [label || key].includes(selectedLink),
+                            })}
                         >
-                            {label}
-                        </Typography>
-                    </MenuItem>
-                ))}
-            </MenuList>
-        ));
+                            <Typography
+                                variant="button"
+                                color="inherit"
+                                className={classes.menuLabel}
+                            >
+                                {label}
+                            </Typography>
+                        </MenuItem>
+                    ))}
+                </MenuList>
+            )),
+        []
+    );
+
     return (
         <React.Fragment>
             <AppBarBase position="sticky" className={cx(rootStyles, classes.root)}>
@@ -202,20 +204,23 @@ const AppBar = ({
                         )}
                     </IconButton>
                     <div className={classes.leftSection}>
-                        {leftComponent ||
-                            logo ||
-                            (title && (
-                                <Typography
-                                    variant="h6"
-                                    color="inherit"
-                                    className={classes.title}
-                                >
-                                    {title}
-                                </Typography>
-                            ))}
+                        {leftComponent || (
+                            <>
+                                {logo && <div className={classes.logo}>{logo}</div>}
+                                {title && (
+                                    <Typography
+                                        variant="h6"
+                                        color="inherit"
+                                        className={classes.title}
+                                    >
+                                        {title}
+                                    </Typography>
+                                )}
+                            </>
+                        )}
                     </div>
                     <div className={classes.middleSection}>
-                        <Hidden smDown>{menu}</Hidden>
+                        <Hidden smDown>{middleComponent || menu}</Hidden>
                     </div>
                     <div className={classes.rightSection}>
                         {rightComponent || (
@@ -245,7 +250,7 @@ const AppBar = ({
                 <Hidden smUp implementation="css">
                     <Drawer
                         container={container}
-                        variant="temporary"
+                        className={classes.drawer}
                         open={mobileOpen}
                         onClose={handleDrawerToggle}
                         classes={{
@@ -261,6 +266,4 @@ const AppBar = ({
             </nav>
         </React.Fragment>
     );
-};
-
-export default withStyles(styles)(AppBar);
+}

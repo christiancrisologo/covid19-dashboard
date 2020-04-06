@@ -2,6 +2,7 @@ import React from "react";
 import cls from "clsx";
 import { Typography, Hidden, styled, makeStyles } from "@material-ui/core";
 import AppBar from "./AppBar";
+import { ReactComponent as Logo } from "assets/covid19-logo.svg";
 
 export const ContentWrapper = styled("div")(({ theme }) => ({
     flexGrow: 1,
@@ -32,17 +33,7 @@ const useStyles = makeStyles((theme) => ({
         flexGrow: 1,
     },
     appBar: {},
-    pageTitleContainer: {
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(1),
-        width: "100%",
-        [theme.breakpoints.up("md")]: {
-            width: "94%",
-            minWidth: theme.spacing(128),
-            margin: "0 auto",
-            flexGrow: 0,
-        },
-    },
+
     pageTitleText: {
         textAlign: "center",
         padding: "0 48px",
@@ -53,7 +44,9 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center",
         height: "112px",
         position: "relative",
+
         margin: "0 auto",
+        marginTop: theme.spacing(3),
         [theme.breakpoints.down("sm")]: {
             height: "56px",
         },
@@ -128,23 +121,22 @@ export const Layout = ({
     ...rest
 }) => {
     const classes = useStyles();
-
     return (
         <FullscreenLayout>
             <BackgroundLayout>
                 {appBarComponent || (
                     <AppBar
+                        title="COVID19"
+                        logo={<Logo width={24} height={24} color="#FFF" />}
                         className={classes.appBar}
-                        onBack={onBack}
+                        menuList={[{ label: "Home" }]}
                         {...rest}
                         {...appBarProps}
                     />
                 )}
                 {secondaryBar}
                 {
-                    <div
-                        className={cls(classes.headerSection, classes.pageTitleContainer)}
-                    >
+                    <div className={classes.headerSection}>
                         {pageTitleComponent ||
                             ((pageTitle || title) && (
                                 <div className={classes.titleMainContainer}>

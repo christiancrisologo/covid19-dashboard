@@ -1,15 +1,12 @@
 import React from "react";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import { ThemeProvider } from "@material-ui/core/styles";
-import theme from "./theme";
-import Dashboard from "Dashboard";
+import Dashboard from "pages/Dashboard";
+import WithTheme from "WithTheme";
 
 function App() {
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
+        <WithTheme>
             <Dashboard />
-        </ThemeProvider>
+        </WithTheme>
     );
 }
 
